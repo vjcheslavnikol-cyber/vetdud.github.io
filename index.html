@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>VetUZI — УЗИ мелких домашних животных</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; background:#0b1220; font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif; overflow:hidden; }
+
+  .deck { height:100vh; width:100vw; position:relative; overflow:hidden; }
+  .slide {
+    position:absolute; inset:0;
+    display:flex; flex-direction:column;
+    padding:56px 22px 64px 22px;
+    background:linear-gradient(160deg,#0b1220 0%,#131c2e 100%);
+    color:#eaf1fb;
+    opacity:0; transform:translateX(40px);
+    transition:opacity .3s, transform .3s;
+    pointer-events:none;
+    overflow-y:auto;
+    overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;
+  }
+  .slide.active { opacity:1; transform:translateX(0); pointer-events:auto; }
+
+  /* Номер слайда слева сверху */
+  .num {
+    position:absolute; top:14px; left:16px;
+    font-size:12px; font-weight:700;
+    color:#0b1220; background:#7fd3ff;
+    padding:3px 10px; border-radius:20px;
+    z-index:5; letter-spacing:.5px;
+  }
+
+  .slide h1 { font-size:clamp(22px,6.2vw,38px); line-height:1.15; margin-bottom:14px; color:#ffffff; }
+  .slide h2 { font-size:clamp(18px,5.2vw,32px); line-height:1.2; margin-bottom:12px; color:#7fd3ff; }
+  .slide h3 { font-size:clamp(14px,4vw,22px); line-height:1.25; margin:10px 0 6px; color:#ffd76a; }
+  .slide p, .slide li { font-size:clamp(13px,3.7vw,20px); line-height:1.45; margin-bottom:8px; color:#eaf1fb; }
+  .slide ul { list-style:none; padding-left:0; }
+  .slide ul li::before { content:"▸ "; color:#7fd3ff; font-weight:700; }
+  .slide .sub { color:#b8c8e0; font-size:clamp(12px,3.3vw,18px); }
+
+  table {
+    width:100%; border-collapse:collapse; margin:8px 0 12px 0;
+    font-size:clamp(11px,3.1vw,17px);
+    table-layout:fixed;
+  }
+  th, td {
+    border:1px solid #2e4166; padding:6px 7px;
+    text-align:left; color:#eaf1fb; word-wrap:break-word; overflow-wrap:break-word;
+  }
+  th { background:rgba(127,211,255,.14); color:#bfe6ff; font-weight:700; }
+  td { background:rgba(255,255,255,.02); }
+
+  .figure {
+    background:#0e1626; border:1px solid #24334d; border-radius:12px;
+    padding:8px; margin:10px 0;
+  }
+  .figure svg { width:100%; height:auto; display:block; max-height:260px; }
+  .figure .cap { color:#a7bbd8; font-size:clamp(10px,2.8vw,14px); margin-top:5px; text-align:center; }
+
+  /* Заглушка под изображение */
+  .imgph {
+    border:2px dashed #3a4f73; border-radius:12px;
+    padding:14px 10px; text-align:center;
+    color:#bfe6ff; font-size:clamp(11px,3.2vw,17px);
+    margin:10px 0; background:rgba(127,211,255,.05);
+  }
+  .imgph b { color:#7fd3ff; display:block; margin-bottom:4px; font-size:clamp(12px,3.4vw,18px); }
+  .imgph code { color:#ffd76a; font-size:clamp(11px,3vw,15px); }
+
+  .tag {
+    display:inline-block; margin-top:10px; padding:6px 12px; border-radius:8px;
+    background:rgba(127,211,255,.14); color:#bfe6ff;
+    font-size:clamp(11px,3vw,16px);
+  }
+
+  .counter { position:fixed; bottom:10px; right:14px; color:#9fb3d8; font-size:13px; z-index:10; }
+  .nav { position:fixed; bottom:10px; left:0; right:0; display:flex; justify-content:center; gap:4px; z-index:10; flex-wrap:wrap; padding:0 10px; }
+  .dot { width:5px; height:5px; border-radius:50%; background:#2a3a55; transition:background .2s; }
+  .dot.active { background:#7fd3ff; }
+  .hint { position:fixed; top:10px; right:12px; color:#8fa6c8; font-size:11px; z-index:10; }
+
+  /* Разделители внутри слайда */
+  .hr { height:1px; background:#24334d; margin:12px 0; border:0; }
+
+  @media (max-height:700px) {
+    .slide { padding:50px 18px 58px 18px; }
+    .slide h2 { font-size:clamp(16px,4.6vw,26px); }
+  }
+</style>
+</head>
+<body>
+<div class="hint">свайп ← →</div>
+<div class="deck" id="deck">
+
+<!-- ================= 1 ================= -->
+<section class="slide active">
+  <div class="num">1 / 35</div>
+  <h1>УЗИ мелких домашних животных: от физики к практике</h1>
+  <p class="sub">Интенсив для ветеринарных врачей · 12 дней × 3 ак. часа</p>
+  <p class="sub">Автор: Дударев В.Н и ветеринарный врач Дударева Д.С.<br>Дата: 28.10.2026</p>
+  <div class="figure"><img src="img/IMG_01_title.png" alt="..." style="width:100%;border-radius:10px;"></div>
+</section>
+
+<!-- ================= 2 ================= -->
+<section class="slide">
+  <div class="num">2 / 35</div>
+  <h2>Эхогенность: как ткани «светятся»</h2>
+  <div class="figure">
+    <svg viewBox="0 0 400 110" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="10" width="90" height="40" rx="6" fill="#3a4f73"/><text x="55" y="35" fill="#eaf1fb" font-size="11" text-anchor="middle">ткань</text>
+      <rect x="110" y="10" width="90" height="40" rx="6" fill="#3a4f73"/><text x="155" y="35" fill="#eaf1fb" font-size="11" text-anchor="middle">отражение</text>
+      <rect x="210" y="10" width="90" height="40" rx="6" fill="#3a4f73"/><text x="255" y="35" fill="#eaf1fb" font-size="11" text-anchor="middle">датчик</text>
+      <rect x="310" y="10" width="80" height="40" rx="6" fill="#3a4f73"/><text x="350" y="35" fill="#eaf1fb" font-size="11" text-anchor="middle">изображение</text>
+      <line x1="100" y1="30" x2="110" y2="30" stroke="#7fd3ff" stroke-width="2"/>
+      <line x1="200" y1="30" x2="210" y2="30" stroke="#7fd3ff" stroke-width="2"/>
+      <line x1="300" y1="30" x2="310" y2="30" stroke="#7fd3ff" stroke-width="2"/>
+      <text x="200" y="80" fill="#a7bbd8" font-size="12" text-anchor="middle">чем плотнее ткань — тем ярче отражение</text>
+    </svg>
+    <div class="cap">ткань → отражение → датчик → изображение</div>
+  </div>
+  <table>
+    <tr><th>Тип</th><th>Вид</th><th>Примеры</th></tr>
+    <tr><td>Гиперэхогенные</td><td>ярко-белые</td><td>кость, газ, кальцинаты</td></tr>
+    <tr><td>Изоэхогенные</td><td>средний тон</td><td>печень, селезёнка, почка</td></tr>
+    <tr><td>Гипоэхогенные</td><td>тёмно-серые</td><td>отёк, опухоли, лимфоузлы</td></tr>
+    <tr><td>Анэхогенные</td><td>чёрные</td><td>моча, желчь, киста</td></tr>
+  </table>
+  <table>
+    <tr><th>Датчик</th><th>Частота</th><th>Применение</th></tr>
+    <tr><td>Линейный</td><td>7,5–10 МГц</td><td>Кошки, мелкие собаки</td></tr>
+    <tr><td>Конвексный</td><td>5–7,5 МГц</td><td>Средние собаки</td></tr>
+    <tr><td>Микроконвексный</td><td>—</td><td>Пузырь, матка</td></tr>
+  </table>
+  <div class="figure"><img src="img/IMG_02_echogenicity.png" alt="Эхогенность" style="width:100%;border-radius:10px;"></div>
+  <span class="tag">Эхогенность — сравнительная характеристика</span>
+</section>
+
+<!-- ================= 3 ================= -->
+<section class="slide">
+  <div class="num">3 / 35</div>
+  <h2>Артефакты как подсказки (и ловушки)</h2>
+  <ul>
+    <li>Акустическая тень — «чёрная дорожка» за камнем</li>
+    <li>Дистальное усиление — «светлее» за кистой</li>
+    <li>Реверберации — «лестница» от газа</li>
+  </ul>
+  <div class="figure"><img src="img/IMG_03_artifacts.png" alt="Эхогенность" style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_03b_artifact_scheme.png" alt="..." style="width:100%;border-radius:10px;"></div>
+</section>
+
+<!-- ================= 4 ================= -->
+<section class="slide">
+  <div class="num">4 / 35</div>
+  <h2>Частота vs глубина</h2>
+  <div class="figure">
+    <svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+      <line x1="40" y1="170" x2="380" y2="170" stroke="#3a4f73" stroke-width="2"/>
+      <line x1="40" y1="20" x2="40" y2="170" stroke="#3a4f73" stroke-width="2"/>
+      <text x="210" y="192" fill="#a7bbd8" font-size="12" text-anchor="middle">частота (МГц) →</text>
+      <text x="20" y="95" fill="#a7bbd8" font-size="12" text-anchor="middle" transform="rotate(-90 20 95)">глубина (см) →</text>
+      <path d="M50,150 Q200,40 370,30" stroke="#7fd3ff" stroke-width="3" fill="none"/>
+      <path d="M50,30 Q200,140 370,160" stroke="#ffcf5c" stroke-width="3" fill="none"/>
+      <text x="300" y="45" fill="#7fd3ff" font-size="12">разрешение ↑</text>
+      <text x="300" y="150" fill="#ffcf5c" font-size="12">глубина ↓</text>
+    </svg>
+    <div class="cap">Выше частота → лучше разрешение, но меньше глубина</div>
+  </div>
+  <table>
+    <tr><th>Задача</th><th>Частота</th><th>Датчик</th><th>Глубина</th></tr>
+    <tr><td>Кошки</td><td>7,5–10 МГц</td><td>Линейный</td><td>до 4–6 см</td></tr>
+    <tr><td>Средние собаки</td><td>5–7,5 МГц</td><td>Конвексный</td><td>до 8–12 см</td></tr>
+    <tr><td>Крупные собаки</td><td>3–5 МГц</td><td>Конвексный</td><td>до 15–20 см</td></tr>
+  </table>
+  <div class="figure"><img src="img/IMG_04_freq_depth.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <span class="tag">Нет универсального датчика — есть задача</span>
+</section>
+
+<!-- ================= 5 ================= -->
+<section class="slide">
+  <div class="num">5 / 35</div>
+  <h2>Какой датчик выбрать</h2>
+  <div class="figure">
+    <svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+      <rect x="30" y="20" width="60" height="90" rx="8" fill="#16213a" stroke="#7fd3ff" stroke-width="2"/>
+      <rect x="30" y="20" width="60" height="14" rx="6" fill="#7fd3ff"/>
+      <path d="M60,110 Q60,150 100,160" stroke="#3a4f73" stroke-width="4" fill="none"/>
+      <text x="60" y="185" fill="#7fd3ff" font-size="12" text-anchor="middle">линейный</text>
+      <rect x="170" y="30" width="60" height="80" rx="8" fill="#16213a" stroke="#7fd3ff" stroke-width="2"/>
+      <path d="M170,30 Q200,10 230,30" fill="#7fd3ff"/>
+      <path d="M200,110 Q200,150 240,160" stroke="#3a4f73" stroke-width="4" fill="none"/>
+      <text x="200" y="185" fill="#7fd3ff" font-size="12" text-anchor="middle">конвексный</text>
+      <rect x="310" y="35" width="55" height="75" rx="8" fill="#16213a" stroke="#7fd3ff" stroke-width="2"/>
+      <path d="M310,35 Q337,18 365,35" fill="#7fd3ff"/>
+      <path d="M337,110 Q337,150 377,160" stroke="#3a4f73" stroke-width="4" fill="none"/>
+      <text x="337" y="185" fill="#7fd3ff" font-size="12" text-anchor="middle">микроконвексный</text>
+    </svg>
+    <div class="cap">Жёлтая рабочая поверхность — сверху</div>
+  </div>
+  <ul>
+    <li><b>Линейный:</b> мелкие зоны, высокая детализация</li>
+    <li><b>Конвексный:</b> большая площадь, средняя детализация</li>
+    <li><b>Микроконвексный:</b> малые окна — таз, сердце, матка</li>
+  </ul>
+  <div class="figure"><img src="img/IMG_05a_probe_linear.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_05b_probe_convex.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_05c_probe_microconvex.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <span class="tag">Фото датчиков — см. источники</span>
+</section>
+
+<!-- ================= 6 ================= -->
+<section class="slide">
+  <div class="num">6 / 35</div>
+  <h2>Настройки, которые нужно знать сразу</h2>
+  <div class="figure">
+    <svg viewBox="0 0 400 160" xmlns="http://www.w3.org/2000/svg">
+      <rect x="20" y="15" width="360" height="130" rx="8" fill="#16213a" stroke="#3a4f73"/>
+      <rect x="35" y="30" width="90" height="30" rx="5" fill="#7fd3ff"/><text x="80" y="50" fill="#0b1220" font-size="11" text-anchor="middle">Глубина</text>
+      <rect x="140" y="30" width="90" height="30" rx="5" fill="#ffcf5c"/><text x="185" y="50" fill="#0b1220" font-size="11" text-anchor="middle">Фокус</text>
+      <rect x="245" y="30" width="90" height="30" rx="5" fill="#9aa7b8"/><text x="290" y="50" fill="#0b1220" font-size="11" text-anchor="middle">TGC</text>
+      <rect x="35" y="80" width="90" height="30" rx="5" fill="#7fd3ff"/><text x="80" y="100" fill="#0b1220" font-size="11" text-anchor="middle">Частота</text>
+      <rect x="140" y="80" width="200" height="50" rx="6" fill="#0e1626" stroke="#3a4f73"/>
+      <text x="240" y="110" fill="#a7bbd8" font-size="12" text-anchor="middle">экран аппарата</text>
+    </svg>
+    <div class="cap">4 зоны: глубина, фокус, TGC, частота</div>
+  </div>
+  <table>
+    <tr><th>Настройка</th><th>Что делает</th><th>Проверка</th></tr>
+    <tr><td>Глубина</td><td>Максимальная глубина</td><td>Орган + 1–2 см</td></tr>
+    <tr><td>Фокус</td><td>Точка разрешения</td><td>На уровне органа</td></tr>
+    <tr><td>Gain/TGC</td><td>Яркость по глубине</td><td>Верх = низ</td></tr>
+    <tr><td>Частота</td><td>Разрешение vs глубина</td><td>Пресет под животное</td></tr>
+  </table>
+  <div class="figure"><img src="img/IMG_06_settings.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <span class="tag">80% качества картинки — правильные настройки</span>
+</section>
+
+<!-- ================= 7 ================= -->
+<section class="slide">
+  <div class="num">7 / 35</div>
+  <h2>Калибровка и уход за датчиком</h2>
+  <ul>
+    <li>Не ронять, не перегибать кабель</li>
+    <li>Протирать мягкой салфеткой + спецсредство</li>
+    <li>Проверять линзу (нет царапин)</li>
+    <li>Калибровка по протоколу производителя</li>
+  </ul>
+  <div class="figure"><img src="img/IMG_07a_probe_before.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_07b_probe_after.png" alt="..." style="width:100%;border-radius:10px;"></div>
+</section>
+
+<!-- ================= 8 ================= -->
+<section class="slide">
+  <div class="num">8 / 35</div>
+  <h2>Что сделать ДО включения аппарата</h2>
+  <h3>Ассистент сообщает</h3>
+  <table>
+    <tr><th>Что уточнить</th><th>Зачем</th></tr>
+    <tr><td>Вид, порода, пол, возраст, вес</td><td>Датчик, частота, нормы</td></tr>
+    <tr><td>Последний приём пищи и воды</td><td>Голод 8–12 ч</td></tr>
+    <tr><td>Мочеиспускание, пузырь</td><td>Оценка стенок</td></tr>
+    <tr><td>Беременность / срок</td><td>Тактика</td></tr>
+    <tr><td>Жалобы и показания</td><td>Что ищем</td></tr>
+    <tr><td>Стресс, агрессия</td><td>Фиксация</td></tr>
+    <tr><td>Шерсть в зоне</td><td>Выбрить</td></tr>
+    <tr><td>Предыдущие УЗИ</td><td>Динамика</td></tr>
+    <tr><td>Согласие владельца</td><td>Процедура и фото</td></tr>
+  </table>
+  <h3>Врач проверяет</h3>
+  <ul>
+    <li>Показания и область</li>
+    <li>Состояние, пальпация</li>
+    <li>Голод, пузырь, шерсть</li>
+    <li>Датчик и пресет</li>
+    <li>Свет, фиксация, гель</li>
+    <li>Аппарат включён</li>
+    <li>Владелец в курсе</li>
+  </ul>
+  <div class="figure"><img src="img/IMG_08a_checklist_patient.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_08b_info_transfer.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <span class="tag">80% качества — до включения аппарата</span>
+</section>
+
+<!-- ================= 9 ================= -->
+<section class="slide">
+  <div class="num">9 / 35</div>
+  <h2>Позиции для УЗИ</h2>
+  <h3>Боковое (чаще всего)</h3>
+  <table>
+    <tr><td>+</td><td>Доступ, минимальный стресс, удобно</td></tr>
+    <tr><td>−</td><td>Сложнее симметрия, пузырь смещается</td></tr>
+    <tr><td>Органы</td><td>Печень, селезёнка, почки, ЖКТ, матка</td></tr>
+    <tr><td>Фиксация</td><td>Ассистент держит голову и лапы</td></tr>
+  </table>
+  <h3>Дорсальное (на спине)</h3>
+  <table>
+    <tr><td>+</td><td>Симметрия, пузырь, простата, матка</td></tr>
+    <tr><td>−</td><td>Стресс, требует фиксации, газ смещается</td></tr>
+    <tr><td>Органы</td><td>Пузырь, простата, матка, надпочечники</td></tr>
+    <tr><td>Фиксация</td><td>Ассистент держит конечности, валик</td></tr>
+  </table>
+  <h3>Стоячее</h3>
+  <table>
+    <tr><td>+</td><td>Минимальный стресс, крупные собаки</td></tr>
+    <tr><td>−</td><td>Сложнее фиксация, ограничен доступ</td></tr>
+    <tr><td>Органы</td><td>Пузырь, почки, беременная матка</td></tr>
+    <tr><td>Фиксация</td><td>Ассистент придерживает</td></tr>
+  </table>
+  <div class="figure"><img src="img/IMG_09a_lateral.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_09b_dorsal.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_09c_standing.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <span class="tag">Нет универсального положения</span>
+</section>
+
+<!-- ================= 10 ================= -->
+<section class="slide">
+  <div class="num">10 / 35</div>
+  <h2>Пошаговый алгоритм сканирования</h2>
+  <table>
+    <tr><th>Шаг</th><th>Действие</th><th>Правило</th></tr>
+    <tr><td>1</td><td>Старт</td><td>Мечевидный отросток</td></tr>
+    <tr><td>2</td><td>Движение</td><td>Краниокаудально, слева направо</td></tr>
+    <tr><td>3</td><td>Проекции</td><td>Сагиттальная + поперечная + косая</td></tr>
+    <tr><td>4</td><td>Фиксация</td><td>Фото/клипы + подписи</td></tr>
+  </table>
+  <h3>Логика порядка</h3>
+  <table>
+    <tr><th>№</th><th>Орган</th><th>Почему</th></tr>
+    <tr><td>1</td><td>Печень</td><td>Крупный, легко найти</td></tr>
+    <tr><td>2</td><td>Желудок, кишка</td><td>Рядом, газ мешает</td></tr>
+    <tr><td>3</td><td>Селезёнка</td><td>Слева</td></tr>
+    <tr><td>4</td><td>Почки</td><td>Забрюшинно</td></tr>
+    <tr><td>5</td><td>Пузырь</td><td>Внизу</td></tr>
+    <tr><td>6</td><td>Матка/простата</td><td>Таз</td></tr>
+    <tr><td>7</td><td>Поджелудочная</td><td>Трудный — в конце</td></tr>
+  </table>
+  <div class="figure"><img src="img/IMG_10_scan_route.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <span class="tag">Алгоритм важнее скорости</span>
+</section>
+
+<!-- ================= 11 ================= -->
+<section class="slide">
+  <div class="num">11 / 35</div>
+  <h2>Сагиттальная проекция</h2>
+  <ul>
+    <li>Датчик вдоль тела, маркер к голове</li>
+    <li>Продольный размер, контуры, сосуды</li>
+    <li>Стандарт для сравнения динамики</li>
+  </ul>
+  <h3>Что видно</h3>
+  <table>
+    <tr><th>Орган</th><th>Что оцениваем</th></tr>
+    <tr><td>Печень</td><td>Длина, край, сосуды</td></tr>
+    <tr><td>ЖП</td><td>Форма, стенка</td></tr>
+    <tr><td>Селезёнка</td><td>Длина, толщина</td></tr>
+    <tr><td>Почка</td><td>Длина по длинной оси</td></tr>
+    <tr><td>Пузырь</td><td>Форма, стенка</td></tr>
+    <tr><td>ЖКТ</td><td>Слоистость</td></tr>
+  </table>
+  <div class="figure"><img src="img/IMG_11a_sag_probe.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_11b_sag_screen.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_11c_sag_orient.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_11d_sag_measure.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <span class="tag">Сагиттальная — базовая для продольных размеров</span>
+</section>
+
+<!-- ================= 12 ================= -->
+<section class="slide">
+  <div class="num">12 / 35</div>
+  <h2>Поперечная проекция</h2>
+  <ul>
+    <li>Датчик поперёк тела, маркер вправо</li>
+    <li>Симметрия, толщина стенки, ширина</li>
+    <li>Дополняет сагиттальную</li>
+  </ul>
+  <h3>Что видно</h3>
+  <table>
+    <tr><th>Орган</th><th>Что оцениваем</th></tr>
+    <tr><td>Печень</td><td>Симметрия долей</td></tr>
+    <tr><td>Почки</td><td>Симметрия, ширина</td></tr>
+    <tr><td>Пузырь</td><td>Форма, стенка</td></tr>
+    <tr><td>ЖКТ</td><td>Слоистость, «мишень»</td></tr>
+    <tr><td>Простата</td><td>Симметрия долей</td></tr>
+  </table>
+  <div class="figure"><img src="img/IMG_12a_trans_probe.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_12b_trans_screen.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_12c_sag_vs_trans.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <span class="tag">Поперечная — симметрия и стенки</span>
+</section>
+
+<!-- ================= 13 ================= -->
+<section class="slide">
+  <div class="num">13 / 35</div>
+  <h2>Косая проекция и документирование</h2>
+  <ul>
+    <li>Датчик под углом 30–60°</li>
+    <li>Труднодоступные зоны, межрёберные промежутки</li>
+    <li>Обход газа, костей, рубцов</li>
+  </ul>
+  <h3>Документирование</h3>
+  <table>
+    <tr><th>Что</th><th>Как</th><th>Зачем</th></tr>
+    <tr><td>Ключевые срезы</td><td>Фото</td><td>Сравнение</td></tr>
+    <tr><td>Динамика</td><td>Клипы</td><td>Перистальтика</td></tr>
+    <tr><td>Измерения</td><td>Калиперы</td><td>Размеры</td></tr>
+    <tr><td>Подписи</td><td>Орган, проекция</td><td>Воспроизводимость</td></tr>
+    <tr><td>Дата</td><td>Авто</td><td>Юридическая ценность</td></tr>
+  </table>
+  <div class="figure"><img src="img/IMG_13a_oblique_probe.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_13b_oblique_screen.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_13c_documentation.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_13d_bypass.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <span class="tag">Косая — «третий глаз» УЗИ</span>
+</section>
+
+<!-- ================= 14 ================= -->
+<section class="slide">
+  <div class="num">14 / 35</div>
+  <h2>Печень и желчный пузырь</h2>
+  <table>
+    <tr><th>Параметр</th><th>Норма</th><th>Патология</th></tr>
+    <tr><td>Размер</td><td>Не выходит за дугу</td><td>Гепатомегалия</td></tr>
+    <tr><td>Эхогенность</td><td>Изо/чуть выше селезёнки</td><td>Гипер/гипо</td></tr>
+    <tr><td>Структура</td><td>Однородная</td><td>Очаги</td></tr>
+    <tr><td>Края</td><td>Чёткие</td><td>Деформация</td></tr>
+    <tr><td>Сосуды</td><td>Воротная, печёночные</td><td>Тромбы</td></tr>
+  </table>
+  <h3>Желчный пузырь</h3>
+  <table>
+    <tr><th>Параметр</th><th>Норма</th><th>Патология</th></tr>
+    <tr><td>Содержимое</td><td>Анэхогенное</td><td>Осадок, камни</td></tr>
+    <tr><td>Стенка</td><td>≤1–2 мм</td><td>Утолщение</td></tr>
+    <tr><td>Форма</td><td>Грушевидная</td><td>Деформация</td></tr>
+  </table>
+  <div class="figure"><img src="img/IMG_14a_liver_norm.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_14b_gb_norm.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <span class="tag">Печень — эталон эхогенности; ЖП — маркер холестаза</span>
+</section>
+
+<!-- ================= 15 ================= -->
+<section class="slide">
+  <div class="num">15 / 35</div>
+  <h2>Селезёнка: ориентиры и нормы</h2>
+  <ul>
+    <li>Слева, каудальнее желудка</li>
+    <li>Дорсально — к левой почке</li>
+    <li>Эхогенность выше печени, ниже почки</li>
+  </ul>
+  <table>
+    <tr><th>Параметр</th><th>Норма</th><th>Патология</th></tr>
+    <tr><td>Размер</td><td>Зависит от породы</td><td>Спленомегалия</td></tr>
+    <tr><td>Форма</td><td>Вытянутая</td><td>Деформация</td></tr>
+    <tr><td>Эхогенность</td><td>Выше печени</td><td>Гипо/гипер</td></tr>
+    <tr><td>Ворота</td><td>Видны сосуды</td><td>Тромбоз</td></tr>
+  </table>
+  <div class="figure"><img src="img/IMG_15a_spleen_loc.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_15b_spleen_echo.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_15c_spleen_norm.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <span class="tag">Селезёнка — эталон эхогенности</span>
+</section>
+
+<!-- ================= 16 ================= -->
+<section class="slide">
+  <div class="num">16 / 35</div>
+  <h2>Почки: размеры и структура</h2>
+  <table>
+    <tr><th>Параметр</th><th>Норма</th><th>Патология</th></tr>
+    <tr><td>Длина</td><td>Кошка 3,5–4,5 см</td><td>Уменьшение/увеличение</td></tr>
+    <tr><td>Ширина</td><td>Кошка ~2–3 см</td><td>Асимметрия</td></tr>
+    <tr><td>Кора</td><td>Гипоэхогенная</td><td>Утолщение/истончение</td></tr>
+    <tr><td>Синус</td><td>Гиперэхогенный</td><td>Расширение, камни</td></tr>
+    <tr><td>Симметрия</td><td>Парные</td><td>Асимметрия</td></tr>
+  </table>
+  <div class="figure"><img src="img/IMG_16a_kidney_loc.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_16b_kidney_sag.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_16c_kidney_norm_vs_stone.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <span class="tag">Почки — парный орган, сравниваем</span>
+</section>
+
+<!-- ================= 17 ================= -->
+<section class="slide">
+  <div class="num">17 / 35</div>
+  <h2>Мочевой пузырь и надпочечники</h2>
+  <h3>Пузырь</h3>
+  <table>
+    <tr><th>Параметр</th><th>Норма</th><th>Патология</th></tr>
+    <tr><td>Наполнение</td><td>Умеренное</td><td>Пере/спавшийся</td></tr>
+    <tr><td>Содержимое</td><td>Анэхогенное</td><td>Осадок, камни</td></tr>
+    <tr><td>Стенка</td><td>≤1–2 мм</td><td>Утолщение</td></tr>
+    <tr><td>Шейка</td><td>Не расширена</td><td>Обструкция</td></tr>
+  </table>
+  <h3>Надпочечники</h3>
+  <table>
+    <tr><th>Параметр</th><th>Норма</th><th>Патология</th></tr>
+    <tr><td>Размер</td><td>≤1 см (кошка)</td><td>Увеличение</td></tr>
+    <tr><td>Форма</td><td>Овальная</td><td>Округлая</td></tr>
+    <tr><td>Локализация</td><td>У кауд. полой вены</td><td>Смещение</td></tr>
+  </table>
+  <div class="figure"><img src="img/IMG_17a_bladder_norm.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_17b_adrenal_loc.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_17c_adrenal_norm_vs_path.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <span class="tag">Пузырь — урология, надпочечники — эндокринология</span>
+</section>
+
+<!-- ================= 18 ================= -->
+<section class="slide">
+  <div class="num">18 / 35</div>
+  <h2>ЖКТ и поджелудочная: норма</h2>
+  <table>
+    <tr><th>Параметр</th><th>Норма</th><th>Патология</th></tr>
+    <tr><td>Толщина</td><td>≤3–4 мм</td><td>Утолщение</td></tr>
+    <tr><td>Слоистость</td><td>5 слоёв</td><td>Потеря</td></tr>
+    <tr><td>Перистальтика</td><td>Активная</td><td>Отсутствие</td></tr>
+    <tr><td>Просвет</td><td>Не расширен</td><td>Обструкция</td></tr>
+  </table>
+  <h3>Поджелудочная</h3>
+  <table>
+    <tr><th>Параметр</th><th>Норма</th><th>Патология</th></tr>
+    <tr><td>Размер</td><td>≤1 см (кошка)</td><td>Увеличение</td></tr>
+    <tr><td>Эхогенность</td><td>Гипоэхогенная</td><td>Гипер/гипо</td></tr>
+    <tr><td>Края</td><td>Чёткие</td><td>Нечёткие</td></tr>
+  </table>
+  <div class="figure"><img src="img/IMG_18a_bowel_layers.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_18b_pancreas_loc.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_18c_pancreas_norm_vs_path.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <span class="tag">Слоистость + эхогенность — ключевые признаки</span>
+</section>
+
+<!-- ================= 19 ================= -->
+<section class="slide">
+  <div class="num">19 / 35</div>
+  <h2>Матка: норма у небеременной</h2>
+  <table>
+    <tr><th>Параметр</th><th>Норма</th><th>Патология</th></tr>
+    <tr><td>Рога</td><td>Тонкие (кошка ≤2–3 мм)</td><td>Расширение</td></tr>
+    <tr><td>Стенка</td><td>Тонкая</td><td>Утолщение</td></tr>
+    <tr><td>Просвет</td><td>Не виден</td><td>Жидкость, гной</td></tr>
+    <tr><td>Симметрия</td><td>Симметричны</td><td>Асимметрия</td></tr>
+    <tr><td>Яичники</td><td>Малые</td><td>Кисты</td></tr>
+  </table>
+  <div class="figure"><img src="img/IMG_19a_uterus_loc.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_19b_uterus_norm_vs_pyometra.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_19c_uterus_vs_bowel_vs_bladder.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <span class="tag">В норме матка почти не видна</span>
+</section>
+
+<!-- ================= 20 ================= -->
+<section class="slide">
+  <div class="num">20 / 35</div>
+  <h2>Простата: норма у кобеля</h2>
+  <table>
+    <tr><th>Параметр</th><th>Норма</th><th>Патология</th></tr>
+    <tr><td>Размер</td><td>Зависит от породы/возраста</td><td>Гиперплазия</td></tr>
+    <tr><td>Форма</td><td>Овальная</td><td>Деформация</td></tr>
+    <tr><td>Структура</td><td>Однородная</td><td>Очаги</td></tr>
+    <tr><td>Симметрия</td><td>Две доли</td><td>Асимметрия</td></tr>
+    <tr><td>Уретра</td><td>Не расширена</td><td>Обструкция</td></tr>
+  </table>
+  <div class="figure"><img src="img/IMG_20a_prostate_loc.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_20b_prostate_norm_vs_bph.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_20c_prostate_asymmetry.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <span class="tag">Асимметрия — тревожный признак</span>
+</section>
+
+<!-- ================= 21 ================= -->
+<section class="slide">
+  <div class="num">21 / 35</div>
+  <h2>Плоды на ранней стадии</h2>
+  <table>
+    <tr><th>Дни</th><th>Что видно</th></tr>
+    <tr><td>До 20</td><td>Ничего</td></tr>
+    <tr><td>21–25</td><td>Анэхогенные пузыри</td></tr>
+    <tr><td>25–30</td><td>Пузыри, можно считать</td></tr>
+    <tr><td>30–35</td><td>Зародыши</td></tr>
+    <tr><td>35–40</td><td>Сердцебиение</td></tr>
+    <tr><td>40–45</td><td>Конечности, голова</td></tr>
+  </table>
+  <div class="figure"><img src="img/IMG_21a_timeline.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_21b_early_sacs.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_21c_preg_vs_pyometra.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <span class="tag">Оптимально для подсчёта: 25–30 дней</span>
+</section>
+
+<!-- ================= 22 ================= -->
+<section class="slide">
+  <div class="num">22 / 35</div>
+  <h2>Плоды на поздней стадии</h2>
+  <table>
+    <tr><th>Признак</th><th>Жизнеспособен</th><th>Нежизнеспособен</th></tr>
+    <tr><td>Сердцебиение</td><td>Есть</td><td>Нет</td></tr>
+    <tr><td>Движение</td><td>Активное</td><td>Нет</td></tr>
+    <tr><td>Плацента</td><td>Равномерная</td><td>Отслойка</td></tr>
+    <tr><td>Воды</td><td>Умеренно</td><td>Мало/мутные</td></tr>
+  </table>
+  <div class="figure"><img src="img/IMG_22a_late_fetuses.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_22b_heartbeat.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_22c_placenta.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <span class="tag">Сердце + движение + плацента = жизнеспособность</span>
+</section>
+
+<!-- ================= 23 ================= -->
+<section class="slide">
+  <div class="num">23 / 35</div>
+  <h2>Тень и дистальное усиление</h2>
+  <div class="figure">
+    <svg viewBox="0 0 400 130" xmlns="http://www.w3.org/2000/svg">
+      <rect x="20" y="15" width="170" height="100" rx="8" fill="#0e1626" stroke="#3a4f73"/>
+      <rect x="210" y="15" width="170" height="100" rx="8" fill="#0e1626" stroke="#3a4f73"/>
+      <rect x="80" y="40" width="50" height="20" rx="4" fill="#ffffff"/>
+      <polygon points="90,60 120,60 130,105 80,105" fill="#05070c"/>
+      <ellipse cx="295" cy="55" rx="35" ry="20" fill="#05070c" stroke="#7fd3ff"/>
+      <ellipse cx="295" cy="85" rx="30" ry="18" fill="#e8f4ff" opacity=".35"/>
+      <text x="105" y="125" fill="#7fd3ff" font-size="11" text-anchor="middle">тень</text>
+      <text x="295" y="125" fill="#7fd3ff" font-size="11" text-anchor="middle">усиление</text>
+    </svg>
+    <div class="cap">Тень за камнем / усиление за кистой</div>
+  </div>
+  <ul>
+    <li>Тень — за камнем/кальцинатом</li>
+    <li>Усиление — за кистой</li>
+  </ul>
+  <div class="figure"><img src="img/IMG_23a_shadow.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_23b_enhancement.png" alt="..." style="width:100%;border-radius:10px;"></div>
+</section>
+
+<!-- ================= 24 ================= -->
+<section class="slide">
+  <div class="num">24 / 35</div>
+  <h2>Реверберации и «хвост кометы»</h2>
+  <div class="figure">
+    <svg viewBox="0 0 400 130" xmlns="http://www.w3.org/2000/svg">
+      <rect x="20" y="15" width="170" height="100" rx="8" fill="#0e1626" stroke="#3a4f73"/>
+      <rect x="210" y="15" width="170" height="100" rx="8" fill="#0e1626" stroke="#3a4f73"/>
+      <g stroke="#7fd3ff" stroke-width="2">
+        <line x1="60" y1="40" x2="150" y2="40"/>
+        <line x1="60" y1="55" x2="150" y2="55"/>
+        <line x1="60" y1="70" x2="150" y2="70"/>
+        <line x1="60" y1="85" x2="150" y2="85"/>
+      </g>
+      <path d="M250,40 Q295,80 340,110" stroke="#ffcf5c" stroke-width="3" fill="none"/>
+      <text x="105" y="125" fill="#7fd3ff" font-size="11" text-anchor="middle">реверберации</text>
+      <text x="295" y="125" fill="#ffcf5c" font-size="11" text-anchor="middle">хвост кометы</text>
+    </svg>
+  </div>
+  <div class="figure"><img src="img/IMG_24a_reverb.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_24b_comet.png" alt="..." style="width:100%;border-radius:10px;"></div>
+</section>
+
+<!-- ================= 25 ================= -->
+<section class="slide">
+  <div class="num">25 / 35</div>
+  <h2>Патологии печени</h2>
+  <table>
+    <tr><th>Патология</th><th>Признаки</th></tr>
+    <tr><td>Киста</td><td>Анэхогенная, чёткие стенки</td></tr>
+    <tr><td>Абсцесс</td><td>Неоднородный, жидкость + стенка</td></tr>
+    <tr><td>Опухоль</td><td>Гипо/гипер, деформация</td></tr>
+  </table>
+  <h3>Киста vs абсцесс</h3>
+  <table>
+    <tr><th>Признак</th><th>Киста</th><th>Абсцесс</th></tr>
+    <tr><td>Содержимое</td><td>Анэхо</td><td>Неоднородное</td></tr>
+    <tr><td>Стенка</td><td>Тонкая</td><td>Толстая</td></tr>
+    <tr><td>Усиление</td><td>Есть</td><td>Нет</td></tr>
+    <tr><td>Кровоток</td><td>Нет</td><td>Есть</td></tr>
+  </table>
+  <div class="figure"><img src="img/IMG_25a_liver_cyst.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_25b_liver_abscess.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_25c_liver_tumor.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <span class="tag">Очаг — не диагноз, а повод для анализа</span>
+</section>
+
+<!-- ================= 26 ================= -->
+<section class="slide">
+  <div class="num">26 / 35</div>
+  <h2>Патологии почек</h2>
+  <table>
+    <tr><th>Патология</th><th>Признаки</th></tr>
+    <tr><td>Нефролитиаз</td><td>Гиперэхогенный + тень</td></tr>
+    <tr><td>Кисты</td><td>Анэхогенные, без кровотока</td></tr>
+    <tr><td>Опухоли</td><td>Неоднородные, деформация</td></tr>
+    <tr><td>Гидронефроз</td><td>Расширение лоханки</td></tr>
+  </table>
+  <h3>Камень vs киста</h3>
+  <table>
+    <tr><th>Признак</th><th>Камень</th><th>Киста</th></tr>
+    <tr><td>Эхогенность</td><td>Гипер</td><td>Анэхо</td></tr>
+    <tr><td>Тень</td><td>Есть</td><td>Нет</td></tr>
+    <tr><td>Усиление</td><td>Нет</td><td>Есть</td></tr>
+  </table>
+  <div class="figure"><img src="img/IMG_26a_kidney_stone.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_26b_kidney_cyst.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_26c_hydronephrosis.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <span class="tag">Тень + усиление + кровоток — 3 признака</span>
+</section>
+
+<!-- ================= 27 ================= -->
+<section class="slide">
+  <div class="num">27 / 35</div>
+  <h2>Патологии мочевого пузыря</h2>
+  <table>
+    <tr><th>Патология</th><th>Признаки</th></tr>
+    <tr><td>Цистит</td><td>Утолщённая стенка, осадок</td></tr>
+    <tr><td>Полипы</td><td>Выступающие образования</td></tr>
+    <tr><td>Камни</td><td>Гиперэхогенные + тень</td></tr>
+    <tr><td>Пиометра</td><td>Матка с жидкостью</td></tr>
+  </table>
+  <h3>Полип vs камень</h3>
+  <table>
+    <tr><th>Признак</th><th>Полип</th><th>Камень</th></tr>
+    <tr><td>Тень</td><td>Нет</td><td>Есть</td></tr>
+    <tr><td>Смещение</td><td>Фиксирован</td><td>Смещается</td></tr>
+    <tr><td>Кровоток</td><td>Есть</td><td>Нет</td></tr>
+  </table>
+  <div class="figure"><img src="img/IMG_27a_cystitis.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_27b_polyp_vs_stone.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_27c_pyometra.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <span class="tag">Пузырь — зеркало урологии; пиометра ≠ пузырь</span>
+</section>
+
+<!-- ================= 28 ================= -->
+<section class="slide">
+  <div class="num">28 / 35</div>
+  <h2>Инвагинация и свободная жидкость</h2>
+  <table>
+    <tr><th>Признак</th><th>Описание</th></tr>
+    <tr><td>«Мишень»</td><td>Концентрические кольца</td></tr>
+    <tr><td>«Псевдопочка»</td><td>Слоистая структура</td></tr>
+    <tr><td>Перистальтика</td><td>Отсутствует</td></tr>
+    <tr><td>Жидкость</td><td>Анэхогенные зоны</td></tr>
+  </table>
+  <div class="figure"><img src="img/IMG_28a_intussusception_trans.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_28b_intussusception_sag.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_28c_free_fluid.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <span class="tag">«Мишень» + нет перистальтики = неотложность</span>
+</section>
+
+<!-- ================= 29 ================= -->
+<section class="slide">
+  <div class="num">29 / 35</div>
+  <h2>Утолщение стенки кишки</h2>
+  <table>
+    <tr><th>Параметр</th><th>Норма</th><th>Утолщение</th></tr>
+    <tr><td>Тонкая (кошка)</td><td>≤3 мм</td><td>&gt;3 мм</td></tr>
+    <tr><td>Тонкая (собака)</td><td>≤4 мм</td><td>&gt;4 мм</td></tr>
+    <tr><td>Слоистость</td><td>5 слоёв</td><td>Потеря</td></tr>
+  </table>
+  <h3>Воспаление vs опухоль</h3>
+  <table>
+    <tr><th>Признак</th><th>Воспаление</th><th>Опухоль</th></tr>
+    <tr><td>Распространённость</td><td>Диффузное</td><td>Локальное</td></tr>
+    <tr><td>Слоистость</td><td>Сохранена</td><td>Потеряна</td></tr>
+    <tr><td>Лимфоузлы</td><td>Умеренно</td><td>Значительно</td></tr>
+  </table>
+  <div class="figure"><img src="img/IMG_29a_bowel_norm_vs_thick.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_29b_inflammation_vs_tumor.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_29c_algorithm.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <span class="tag">Утолщение — симптом, а не диагноз</span>
+</section>
+
+<!-- ================= 30 ================= -->
+<section class="slide">
+  <div class="num">30 / 35</div>
+  <h2>Панкреатит</h2>
+  <table>
+    <tr><th>Параметр</th><th>Норма</th><th>Панкреатит</th></tr>
+    <tr><td>Размер</td><td>≤1 см</td><td>Утолщение</td></tr>
+    <tr><td>Эхогенность</td><td>Гипо/изо</td><td>Гипоэхогенная</td></tr>
+    <tr><td>Края</td><td>Чёткие</td><td>Нечёткие</td></tr>
+    <tr><td>Жидкость</td><td>Нет</td><td>Есть</td></tr>
+    <tr><td>Проток</td><td>≤1–2 мм</td><td>Расширен</td></tr>
+  </table>
+  <div class="figure"><img src="img/IMG_30a_pancreas_norm.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_30b_pancreatitis.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_30c_peripancreatic_fluid.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <span class="tag">УЗИ + fPLI = подтверждение</span>
+</section>
+
+<!-- ================= 31 ================= -->
+<section class="slide">
+  <div class="num">31 / 35</div>
+  <h2>Протокол УЗИ: что писать</h2>
+  <table>
+    <tr><th>№</th><th>Блок</th><th>Что писать</th></tr>
+    <tr><td>1</td><td>Паспорт</td><td>Вид, порода, пол, возраст, вес, дата, ID</td></tr>
+    <tr><td>2</td><td>Показания</td><td>Почему направили, жалобы</td></tr>
+    <tr><td>3</td><td>Техника</td><td>Датчик, частота, проекции</td></tr>
+    <tr><td>4</td><td>Описание</td><td>Органы по системам</td></tr>
+    <tr><td>5</td><td>Заключение</td><td>Вывод, диагноз</td></tr>
+    <tr><td>6</td><td>Рекомендации</td><td>Что делать дальше</td></tr>
+  </table>
+  <h3>Что описывать по органам</h3>
+  <table>
+    <tr><th>Орган</th><th>Параметры</th></tr>
+    <tr><td>Печень</td><td>Размер, эхо, структура, края</td></tr>
+    <tr><td>ЖП</td><td>Содержимое, стенка</td></tr>
+    <tr><td>Почки</td><td>Длина, ширина, слои, синус</td></tr>
+    <tr><td>Пузырь</td><td>Наполнение, стенка</td></tr>
+    <tr><td>ЖКТ</td><td>Толщина, слоистость</td></tr>
+  </table>
+  <div class="figure"><img src="img/IMG_31a_report_template.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_31b_report_structure.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_31c_report_stages.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <span class="tag">Протокол — клинический и юридический документ</span>
+</section>
+
+<!-- ================= 32 ================= -->
+<section class="slide">
+  <div class="num">32 / 35</div>
+  <h2>Ошибки настройки</h2>
+  <table>
+    <tr><th>№</th><th>Ошибка</th><th>Исправление</th></tr>
+    <tr><td>1</td><td>Большая глубина</td><td>Уменьшить</td></tr>
+    <tr><td>2</td><td>Малая глубина</td><td>Увеличить</td></tr>
+    <tr><td>3</td><td>Фокус на коже</td><td>На орган</td></tr>
+    <tr><td>4</td><td>TGC не выровнен</td><td>Выровнять</td></tr>
+    <tr><td>5</td><td>Высокое усиление</td><td>Снизить</td></tr>
+    <tr><td>6</td><td>Низкое усиление</td><td>Повысить</td></tr>
+    <tr><td>7</td><td>Неверная частота</td><td>Пресет</td></tr>
+  </table>
+  <h3>Чек-лист</h3>
+  <table>
+    <tr><th>Параметр</th><th>Проверка</th></tr>
+    <tr><td>Глубина</td><td>Орган + 1–2 см</td></tr>
+    <tr><td>Фокус</td><td>На орган</td></tr>
+    <tr><td>TGC</td><td>Верх = низ</td></tr>
+    <tr><td>Gain</td><td>Средняя яркость</td></tr>
+    <tr><td>Частота</td><td>Пресет</td></tr>
+  </table>
+  <div class="figure"><img src="img/IMG_32a_poor_vs_good.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_32b_five_params.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_32c_per_organ.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <span class="tag">Плохая картинка ≠ патология; сначала настройки</span>
+</section>
+
+<!-- ================= 33 ================= -->
+<section class="slide">
+  <div class="num">33 / 35</div>
+  <h2>Пропуск и неверная трактовка</h2>
+  <table>
+    <tr><th>№</th><th>Причина</th><th>Как избежать</th></tr>
+    <tr><td>1</td><td>Не все зоны</td><td>Чек-лист</td></tr>
+    <tr><td>2</td><td>Одна проекция</td><td>Минимум 2</td></tr>
+    <tr><td>3</td><td>Артефакт vs патология</td><td>Оценить тень</td></tr>
+    <tr><td>4</td><td>Нет динамики</td><td>Фиксация</td></tr>
+    <tr><td>5</td><td>Спешка</td><td>Алгоритм</td></tr>
+  </table>
+  <h3>Часто пропускают</h3>
+  <table>
+    <tr><th>Зона</th><th>Почему</th></tr>
+    <tr><td>Левая почка</td><td>Глубоко, за газом</td></tr>
+    <tr><td>Поджелудочная</td><td>Трудный орган</td></tr>
+    <tr><td>Надпочечники</td><td>Малые</td></tr>
+    <tr><td>Шейка пузыря</td><td>Глубоко</td></tr>
+  </table>
+  <div class="figure"><img src="img/IMG_33a_zone_map.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_33b_artifact_vs_path.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_33c_checklist_zones.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <span class="tag">Чек-лист + 2–3 проекции + фиксация</span>
+</section>
+
+<!-- ================= 34 ================= -->
+<section class="slide">
+  <div class="num">34 / 35</div>
+  <h2>Динамика и фотофиксация</h2>
+  <table>
+    <tr><th>Что</th><th>Как</th><th>Зачем</th></tr>
+    <tr><td>Ключевые срезы</td><td>Фото</td><td>Сравнение</td></tr>
+    <tr><td>Динамика</td><td>Клипы</td><td>Перистальтика</td></tr>
+    <tr><td>Измерения</td><td>Калиперы</td><td>Размеры</td></tr>
+    <tr><td>Подписи</td><td>Орган, проекция</td><td>Воспроизводимость</td></tr>
+    <tr><td>Дата</td><td>Авто</td><td>Юридическая ценность</td></tr>
+  </table>
+  <div class="figure"><img src="img/IMG_34a_compare_dynamics.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_34b_documentation.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_34c_report_with_images.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <span class="tag">Без фиксации нет динамики</span>
+</section>
+
+<!-- ================= 35 ================= -->
+<section class="slide">
+  <div class="num">35 / 35</div>
+  <h2>Чек-лист: 5 пунктов</h2>
+  <table>
+    <tr><th>№</th><th>Пункт</th><th>Что проверить</th></tr>
+    <tr><td>1</td><td>Оборудование</td><td>Гель, датчики, настройки, питание</td></tr>
+    <tr><td>2</td><td>Место</td><td>Свет, фиксация, пелёнка</td></tr>
+    <tr><td>3</td><td>Животное</td><td>Осмотр, голод, пузырь, шерсть</td></tr>
+    <tr><td>4</td><td>Алгоритм</td><td>От лёгких к сложным</td></tr>
+    <tr><td>5</td><td>Фиксация</td><td>Фото, клипы, подписи, дата</td></tr>
+  </table>
+  <h3>Если пункт не выполнен</h3>
+  <table>
+    <tr><th>Проблема</th><th>Решение</th></tr>
+    <tr><td>Нет геля</td><td>Найти запасной</td></tr>
+    <tr><td>Царапина</td><td>Заменить</td></tr>
+    <tr><td>Нет ассистента</td><td>Не начинать</td></tr>
+    <tr><td>Не голодное</td><td>Перенести</td></tr>
+    <tr><td>Пузырь пустой</td><td>Вода / подождать</td></tr>
+    <tr><td>Шерсть не выбрита</td><td>Выбрить</td></tr>
+  </table>
+  <div class="figure"><img src="img/IMG_35a_checklist_wall.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_35b_doctor_checking.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <div class="figure"><img src="img/IMG_35c_team_work.png" alt="..." style="width:100%;border-radius:10px;"></div>
+  <span class="tag">Чек-лист — инструмент качества</span>
+</section>
+
+</div>
+<div class="counter" id="counter">1 / 35</div>
+<div class="nav" id="nav"></div>
+<script>
+  const slides=[...document.querySelectorAll('.slide')];
+  const counter=document.getElementById('counter');
+  const nav=document.getElementById('nav');
+  let i=0;
+  slides.forEach((_,idx)=>{const d=document.createElement('div');d.className='dot'+(idx===0?' active':'');nav.appendChild(d);});
+  const dots=[...nav.children];
+  function go(n){
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach((s,idx)=>{s.classList.toggle('active',idx===i);s.scrollTop=0;});
+    dots.forEach((d,idx)=>d.classList.toggle('active',idx===i));
+    counter.textContent=(i+1)+' / '+slides.length;
+  }
+  let sx=0, sy=0;
+  document.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;});
+  document.addEventListener('touchend',e=>{
+    const dx=e.changedTouches[0].clientX-sx;
+    const dy=e.changedTouches[0].clientY-sy;
+    if(Math.abs(dx)>60 && Math.abs(dx)>Math.abs(dy)) go(i+(dx<0?1:-1));
+  });
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key===' ') {e.preventDefault();go(i+1);}
+    if(e.key==='ArrowLeft') {e.preventDefault();go(i-1);}
+  });
+  document.addEventListener('click',e=>{
+    if(e.target.closest('.slide')) return;
+    if(e.clientX>window.innerWidth/2) go(i+1); else go(i-1);
+  });
+</script>
+</body>
+</html>
